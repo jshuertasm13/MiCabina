@@ -301,13 +301,6 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
           <label class="check"><input type="checkbox" id="shQr"> Descargar con QR</label>
         </div>
         <p class="note" id="svcNote"></p>
-        <fieldset id="copiesSet"><legend>Copias por hoja</legend>
-          <div class="chips" id="copies">
-            <button class="chip" type="button" data-v="2">2 tiras por hoja</button>
-            <button class="chip" type="button" data-v="1">1 tira sola</button>
-          </div>
-          <p class="note">La hoja de 2 tiras mide 100 × 148 mm, el papel postal de la Selphy. Se corta por la mitad.</p>
-        </fieldset>
       </div>
 
       <div class="card">
@@ -732,7 +725,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   }
   function renderPreview(ev, canvas, shots) { compose(ev, shots, null, canvas); getBg(ev, function (bg) { compose(ev, shots, bg, canvas); }); }
   function sheetOf(ev, c) {
-    if (ev.format !== "tira" || ev.copies !== "2") return c;
+    if (ev.format !== "tira") return c;   /* la tira siempre se imprime doble en la hoja postal */
     var s = document.createElement("canvas"); s.width = c.width * 2; s.height = c.height;
     var x = s.getContext("2d"); x.drawImage(c, 0, 0); x.drawImage(c, c.width, 0); return s;
   }
@@ -793,8 +786,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   function syncEditor() {
     var e = curEv;
     press("types", e.type); press("formats", e.format); press("fonts", e.font); press("frames", e.frame); press("filters", e.filter);
-    press("copies", e.copies); press("cams", e.cam); press("mirrors", e.mirror); $("extBox").hidden = e.cam !== "ext"; renderExtList(); press("timers", e.timer); press("gaps", e.gap); press("sounds", e.sound);
-    $("frameSet").hidden = !!e.template; $("copiesSet").hidden = e.format !== "tira";
+    press("cams", e.cam); press("mirrors", e.mirror); $("extBox").hidden = e.cam !== "ext"; renderExtList(); press("timers", e.timer); press("gaps", e.gap); press("sounds", e.sound);
+    $("frameSet").hidden = !!e.template;
     $("editorGrid").classList.toggle("wide", e.format !== "tira"); $("editorGrid").classList.toggle("land", e.format === "unah");
     $("tplNote").textContent = TPL_NOTES[e.format];
     var notes = [];
@@ -829,7 +822,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       curEv[key] = b.dataset.v; changed(); syncEditor();
     });
   }
-  ["formats:format", "fonts:font", "frames:frame", "filters:filter", "copies:copies", "mirrors:mirror", "timers:timer", "gaps:gap", "sounds:sound"].forEach(function (p) { var a = p.split(":"); chipGroup(a[0], a[1]); });
+  ["formats:format", "fonts:font", "frames:frame", "filters:filter", "mirrors:mirror", "timers:timer", "gaps:gap", "sounds:sound"].forEach(function (p) { var a = p.split(":"); chipGroup(a[0], a[1]); });
   /* cámaras */
   var foundCams = [];
   function renderExtList() {
@@ -1196,14 +1189,25 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     stopStream(); $("camStep").textContent = "Revelando…";
     getBg(curEv, function (bg) {
       var page = compose(curEv, shots, bg), sheet = sheetOf(curEv, page);
-      sheet.toBlob(function (blob) {
+      /* la foto que se ve, guarda y envía es una sola tira; la hoja de impresión puede llevar dos */
+      page.toBlob(function (blob) {
         if (!blob) { toast("No se pudo armar la foto."); showAttract(); return; }
         if (result && result.url) URL.revokeObjectURL(result.url);
-        result = { blob: blob, url: URL.createObjectURL(blob), link: null, file: new File([blob], fileName(), { type: "image/jpeg" }) };
+        if (result && result.printUrl && result.printUrl !== result.url) URL.revokeObjectURL(result.printUrl);
+        result = { blob: blob, url: URL.createObjectURL(blob), link: null, file: new File([blob], fileName(), { type: "image/jpeg" }), printUrl: null, printFile: null };
+        result.printUrl = result.url; result.printFile = result.file;
         dbAdd({ ev: curEv.id, t: Date.now(), blob: blob });
         $("reviewImg").src = result.url; $("printImg").src = result.url;
+        if (sheet !== page) {
+          var mine = result;
+          sheet.toBlob(function (pb) {
+            if (!pb || mine !== result) return;
+            mine.printUrl = URL.createObjectURL(pb); mine.printFile = new File([pb], "imprimir-" + fileName(), { type: "image/jpeg" });
+            $("printImg").src = mine.printUrl;
+          }, "image/jpeg", 0.93);
+        }
         var land = curEv.format === "unah";
-        $("pageSize").textContent = "@page { size: " + (land ? "148mm 100mm" : (curEv.format === "tira" && curEv.copies === "1") ? "50mm 148mm" : "100mm 148mm") + "; margin: 0; }";
+        $("pageSize").textContent = "@page { size: " + (land ? "148mm 100mm" : "100mm 148mm") + "; margin: 0; }";
         $("rvSave").hidden = !curEv.share.save; $("rvPrint").hidden = !curEv.share.print; $("rvEmail").hidden = !curEv.share.email; $("rvQr").hidden = !curEv.share.qr;
         ["rvSave", "rvPrint", "rvEmail", "rvQr"].forEach(function (id) { $(id).classList.remove("done"); });
         $("reviewMsg").textContent = ""; show("review"); startIdle();
@@ -1223,7 +1227,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   };
   $("rvPrint").onclick = function () {
     if (typeof window.print === "function") { rvMsg("Elige la impresora Canon SELPHY y toca Imprimir."); try { window.print(); $("rvPrint").classList.add("done"); return; } catch (e) {} }
-    shareFiles([result.file]).then(function (ok) { if (ok) $("rvPrint").classList.add("done"); });
+    shareFiles([result.printFile || result.file]).then(function (ok) { if (ok) $("rvPrint").classList.add("done"); });
   };
   $("rvEmail").onclick = function () {
     if (!hasMailService()) {
