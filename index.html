@@ -158,21 +158,25 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 #camCancel { position: absolute; left: 14px; top: calc(12px + env(safe-area-inset-top)); background: rgba(255,255,255,.12); color: #fff; border: 0; border-radius: 999px; padding: 10px 16px; font: 700 15px var(--body); cursor: pointer; z-index: 2; }
 
 /* revisión */
-#review { background: var(--bg); display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: 24px; padding: calc(20px + env(safe-area-inset-top)) 24px calc(20px + env(safe-area-inset-bottom)); align-items: center; }
-#review .shot { display: flex; align-items: center; justify-content: center; min-height: 0; height: 100%; }
-#review .shot img { max-height: 100%; max-width: 100%; border-radius: 4px; box-shadow: 0 22px 44px -16px rgba(43,33,64,.55); }
-#review .side { display: flex; flex-direction: column; gap: 12px; }
-#review h1 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 4.6vw, 48px); line-height: 1.05; margin: 0 0 6px; }
-.bigbtn { font: 800 20px var(--body); border-radius: 18px; padding: 16px 18px; min-height: 66px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); display: flex; align-items: center; gap: 14px; cursor: pointer; text-align: left; }
-.bigbtn .ic { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
-.bigbtn .ic svg { width: 24px; height: 24px; }
-.bigbtn small { display: block; font: 600 13px var(--body); color: var(--muted); }
-.bigbtn.done { border-color: #3CB98A; }
-#reviewMsg { min-height: 1.4em; font-weight: 700; margin: 2px 0 0; }
-#reviewTimer { font-size: 13px; color: var(--muted); }
-@media (max-width: 760px), (orientation: portrait) {
-  #review { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; overflow: auto; }
-  #review .shot img { max-height: 46vh; }
+#review { background: var(--bg); display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 22px; padding: calc(16px + env(safe-area-inset-top)) 22px calc(16px + env(safe-area-inset-bottom)); align-items: stretch; }
+#review .shot { display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; }
+#review .shot img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 18px 38px -16px rgba(43,33,64,.55); }
+#review .side { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-width: 0; }
+#review h1 { font-family: var(--display); font-weight: 400; font-size: clamp(24px, 3vw, 34px); line-height: 1.05; margin: 0; }
+.acts4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.act { font: 800 15px var(--body); border-radius: 16px; padding: 10px 6px; min-height: 78px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+.act .ic { width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; }
+.act .ic svg { width: 22px; height: 22px; }
+.act.done { border-color: #3CB98A; background: #F1FBF7; }
+#reviewMsg { min-height: 1.4em; font-weight: 700; font-size: 14.5px; margin: 0; }
+#reviewTimer { font-size: 13px; color: var(--muted); margin: 0; min-height: 1.2em; }
+#review .row .btn { flex: 1; }
+@media (orientation: portrait), (max-width: 700px) {
+  #review { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: 14px; }
+  #review .side { max-width: 640px; width: 100%; margin: 0 auto; }
+  #review h1 { text-align: center; }
+  .acts4 { grid-template-columns: repeat(4, 1fr); }
+  .act { min-height: 72px; font-size: 14px; }
 }
 
 /* ventanas */
@@ -291,7 +295,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       <div class="card">
         <h3>Al terminar, los invitados pueden</h3>
         <div class="grid2">
-          <label class="check"><input type="checkbox" id="shSave"> Guardar en el iPad</label>
+          <label class="check"><input type="checkbox" id="shSave"> Guardar</label>
           <label class="check"><input type="checkbox" id="shPrint"> Imprimir</label>
           <label class="check"><input type="checkbox" id="shEmail"> Enviar por correo</label>
           <label class="check"><input type="checkbox" id="shQr"> Descargar con QR</label>
@@ -312,7 +316,21 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
           <div class="chips" id="cams">
             <button class="chip" type="button" data-v="user">Frontal</button>
             <button class="chip" type="button" data-v="environment">Trasera</button>
+            <button class="chip" type="button" data-v="ext">Externa</button>
           </div>
+          <div id="extBox" hidden style="margin-top:12px">
+            <div class="row"><button class="btn small" id="findCams" type="button">Buscar cámaras conectadas</button><button class="btn small" id="testCam" type="button">Probar cámara</button></div>
+            <div class="chips" id="extList" style="margin-top:10px"></div>
+            <p class="note" id="extNote">Conecta la cámara antes de buscar. En iPad (USB‑C, iPadOS 17 o más nuevo) sirven webcams USB y tarjetas de captura HDMI. En PC sirven las webcams y el programa de webcam de tu cámara (Canon EOS Webcam Utility, Sony Imaging Edge Webcam, etc.).</p>
+          </div>
+          <video id="camTest" playsinline muted autoplay hidden style="width:100%;max-height:280px;background:#000;border-radius:12px;margin-top:10px"></video>
+        </fieldset>
+        <fieldset><legend>Efecto espejo</legend>
+          <div class="chips" id="mirrors">
+            <button class="chip" type="button" data-v="si">Sí, como espejo</button>
+            <button class="chip" type="button" data-v="no">No</button>
+          </div>
+          <p class="note">Con espejo, los invitados se ven como en un espejo y la foto sale igual a lo que vieron.</p>
         </fieldset>
         <fieldset><legend>Cuenta regresiva</legend>
           <div class="chips" id="timers">
@@ -385,7 +403,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     <div class="field"><label class="lab" for="sEjService">Service ID</label><input id="sEjService" type="text" autocomplete="off" spellcheck="false"></div>
     <div class="field"><label class="lab" for="sEjTemplate">Template ID</label><input id="sEjTemplate" type="text" autocomplete="off" spellcheck="false"></div>
     <div class="field"><label class="lab" for="sEjKey">Public key</label><input id="sEjKey" type="text" autocomplete="off" spellcheck="false"></div>
-    <p class="note">Con EmailJS y ImgBB configurados, el invitado escribe su correo y le llega el enlace a su foto. Sin esto, el botón de correo abre la app de Mail del iPad con la foto adjunta.</p>
+    <p class="note">Con EmailJS y ImgBB configurados, el invitado escribe su correo y le llega el enlace a su foto. Sin esto, el botón de correo abre el menú de compartir del dispositivo para enviarla por Mail u otra app.</p>
     <button class="btn small" id="testServices" type="button">Probar conexión</button>
     <p class="note" id="testNote"></p>
   </div>
@@ -438,11 +456,12 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   <div class="shot"><img id="reviewImg" alt="Tus fotos terminadas"></div>
   <div class="side">
     <h1>¡Quedaron geniales!</h1>
-    <p class="note" style="margin:0 0 4px">Elige qué quieres hacer con tu foto:</p>
-    <button class="bigbtn" id="rvSave" type="button"><span class="ic" style="background:#FFE1E5"><svg viewBox="0 0 24 24" fill="none" stroke="#D93A50" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>Guardar<small>En las fotos de este iPad</small></span></button>
-    <button class="bigbtn" id="rvPrint" type="button"><span class="ic" style="background:#FFF1CC"><svg viewBox="0 0 24 24" fill="none" stroke="#B07A00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></span><span>Imprimir<small>Sale en la impresora</small></span></button>
-    <button class="bigbtn" id="rvEmail" type="button"><span class="ic" style="background:#E3F6F1"><svg viewBox="0 0 24 24" fill="none" stroke="#1C8C72" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span>Enviar a mi correo<small>Te llega el enlace a tu foto</small></span></button>
-    <button class="bigbtn" id="rvQr" type="button"><span class="ic" style="background:#ECE8FF"><svg viewBox="0 0 24 24" fill="none" stroke="#5B47D6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M20 20h.01M17 17h3v3"/></svg></span><span>Pasar a mi celular<small>Escanea un código QR</small></span></button>
+    <div class="acts4">
+    <button class="act" id="rvSave" type="button"><span class="ic" style="background:#FFE1E5"><svg viewBox="0 0 24 24" fill="none" stroke="#D93A50" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>Guardar</span></button>
+    <button class="act" id="rvPrint" type="button"><span class="ic" style="background:#FFF1CC"><svg viewBox="0 0 24 24" fill="none" stroke="#B07A00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></span><span>Imprimir</span></button>
+    <button class="act" id="rvEmail" type="button"><span class="ic" style="background:#E3F6F1"><svg viewBox="0 0 24 24" fill="none" stroke="#1C8C72" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span>Correo</span></button>
+    <button class="act" id="rvQr" type="button"><span class="ic" style="background:#ECE8FF"><svg viewBox="0 0 24 24" fill="none" stroke="#5B47D6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M20 20h.01M17 17h3v3"/></svg></span><span>QR al celular</span></button>
+    </div>
     <p id="reviewMsg" role="status" aria-live="polite"></p>
     <div class="row">
       <button class="btn" id="rvRetake" type="button">Repetir fotos</button>
@@ -542,11 +561,11 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     finde:   { template: "finde-1", font: "divertida", frame: "#1F2A44", topSmall: "Bienvenido", topBig: String(NEXT_YEAR), botBig: "¡Feliz año nuevo!", botSmall: "Fin de año " + (NEXT_YEAR - 1) },
     cumple:  { template: "cumple-1", font: "divertida", frame: "#FF5A6E", topSmall: "¡Feliz", topBig: "Cumpleaños!", botBig: "Gracias por venir", botSmall: TODAY }
   };
-  var FIELDS = ["name", "type", "format", "template", "topSmall", "topBig", "botBig", "botSmall", "font", "frame", "filter", "copies", "timer", "gap", "sound", "cam"];
+  var FIELDS = ["name", "type", "format", "template", "topSmall", "topBig", "botBig", "botSmall", "font", "frame", "filter", "copies", "timer", "gap", "sound", "cam", "camId", "camLabel", "mirror"];
   function newEvent(type) {
     var p = PRESETS[type] || PRESETS.boda;
     return { name: TYPE_NAMES[type] || "Evento", type: type, format: "tira", template: p.template, topSmall: p.topSmall, topBig: p.topBig, botBig: p.botBig, botSmall: p.botSmall,
-      font: p.font, frame: p.frame, filter: "color", copies: "2", timer: "3", gap: "5", sound: "voz", cam: "user", share: { save: true, print: true, email: true, qr: true } };
+      font: p.font, frame: p.frame, filter: "color", copies: "2", timer: "3", gap: "5", sound: "voz", cam: "user", camId: "", camLabel: "", mirror: "si", share: { save: true, print: true, email: true, qr: true } };
   }
   function clean(e) {
     var d = newEvent(e && PRESETS[e.type] ? e.type : "boda"), o = {};
@@ -557,7 +576,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     if (["3", "5", "10"].indexOf(o.timer) < 0) o.timer = "3";
     if (["3", "5", "8"].indexOf(o.gap) < 0) o.gap = "5";
     if (["voz", "pitidos", "no"].indexOf(o.sound) < 0) o.sound = "voz";
-    if (o.cam !== "environment") o.cam = "user";
+    if (["user", "environment", "ext"].indexOf(o.cam) < 0) o.cam = "user";
+    if (o.mirror !== "no") o.mirror = "si";
     var s = (e && e.share) || {};
     o.share = { save: s.save !== false, print: s.print !== false, email: s.email !== false, qr: s.qr !== false };
     o.id = (e && e.id) || ("e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
@@ -574,19 +594,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   function loadEvents() {
     var raw = null; try { raw = JSON.parse(lsGet(EV_KEY) || "null"); } catch (e) {}
     if (Array.isArray(raw)) { events = raw.map(clean); return; }
-    /* primera vez: trae los proyectos de La Cabinita si existen */
-    var old = null; try { old = JSON.parse(lsGet("lacabinita-proyectos") || "null"); } catch (e) {}
-    if (Array.isArray(old) && old.length) {
-      events = old.map(function (p, i) {
-        var type = PRESETS[p.event] ? p.event : "boda", pr = PRESETS[type];
-        var e = clean({ type: type, name: p.name, format: p.format, template: (p.template === "local" || String(p.template).indexOf("asset:") === 0) ? pr.template : p.template,
-          topSmall: pr.topSmall, topBig: p.caption || pr.topBig, botBig: pr.botBig, botSmall: p.sub || pr.botSmall, font: p.font === "elegante" || p.font === "clasica" || p.font === "divertida" ? p.font : pr.font,
-          frame: p.frame, filter: p.filter, copies: p.copies, timer: p.timer, gap: p.gap, sound: p.sound, cam: p.cam, orden: i + 1 });
-        return e;
-      });
-    } else {
-      var b = newEvent("boda"); b.name = "Boda Sebas & Majo"; events = [clean(b)];
-    }
+    events = [];
     saveEvents();
   }
   function saveEvents() { if (!lsSet(EV_KEY, JSON.stringify(events))) toast("No se pudo guardar. Revisa el espacio del equipo."); }
@@ -745,10 +753,16 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       var go = document.createElement("button"); go.className = "btn primary small"; go.type = "button"; go.textContent = "Iniciar";
       var ed = document.createElement("button"); ed.className = "btn small"; ed.type = "button"; ed.textContent = "Editar";
       var ph = document.createElement("button"); ph.className = "btn small"; ph.type = "button"; ph.textContent = "Fotos";
+      var del = document.createElement("button"); del.className = "btn small danger"; del.type = "button"; del.textContent = "Eliminar";
+      var delT = null;
+      del.onclick = function () {
+        if (!del.classList.contains("armed")) { del.classList.add("armed"); del.textContent = "¿Seguro? Toca otra vez"; delT = setTimeout(function () { del.classList.remove("armed"); del.textContent = "Eliminar"; }, 4000); return; }
+        clearTimeout(delT); removeEvent(ev.id);
+      };
       go.onclick = function () { startEvent(ev.id); };
       ed.onclick = function () { openEditor(ev.id); };
       ph.onclick = function () { openGallery(ev.id, "home"); };
-      acts.appendChild(go); acts.appendChild(ed); acts.appendChild(ph);
+      acts.appendChild(go); acts.appendChild(ed); acts.appendChild(ph); acts.appendChild(del);
       info.appendChild(b); info.appendChild(meta); info.appendChild(acts);
       card.appendChild(info); box.appendChild(card);
       dbCount(ev.id).then(function (n) { if (n) { meta.textContent += " · " + n + (n === 1 ? " foto" : " fotos"); ph.textContent = "Fotos (" + n + ")"; } });
@@ -779,13 +793,13 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   function syncEditor() {
     var e = curEv;
     press("types", e.type); press("formats", e.format); press("fonts", e.font); press("frames", e.frame); press("filters", e.filter);
-    press("copies", e.copies); press("cams", e.cam); press("timers", e.timer); press("gaps", e.gap); press("sounds", e.sound);
+    press("copies", e.copies); press("cams", e.cam); press("mirrors", e.mirror); $("extBox").hidden = e.cam !== "ext"; renderExtList(); press("timers", e.timer); press("gaps", e.gap); press("sounds", e.sound);
     $("frameSet").hidden = !!e.template; $("copiesSet").hidden = e.format !== "tira";
     $("editorGrid").classList.toggle("wide", e.format !== "tira"); $("editorGrid").classList.toggle("land", e.format === "unah");
     $("tplNote").textContent = TPL_NOTES[e.format];
     var notes = [];
     if (e.share.qr && !hasQr()) notes.push("Para el QR falta poner la clave de ImgBB en Ajustes.");
-    if (e.share.email && !hasMailService()) notes.push("El correo abrirá la app de Mail del iPad con la foto adjunta. Para enviar automático, configura EmailJS en Ajustes.");
+    if (e.share.email && !hasMailService()) notes.push("El correo abrirá el menú de compartir para enviarla por Mail u otra app. Para enviar automático, configura EmailJS en Ajustes.");
     $("svcNote").textContent = notes.join(" ");
     renderTemplates(); renderPreview(e, $("prev"));
   }
@@ -815,7 +829,57 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       curEv[key] = b.dataset.v; changed(); syncEditor();
     });
   }
-  ["formats:format", "fonts:font", "frames:frame", "filters:filter", "copies:copies", "cams:cam", "timers:timer", "gaps:gap", "sounds:sound"].forEach(function (p) { var a = p.split(":"); chipGroup(a[0], a[1]); });
+  ["formats:format", "fonts:font", "frames:frame", "filters:filter", "copies:copies", "mirrors:mirror", "timers:timer", "gaps:gap", "sounds:sound"].forEach(function (p) { var a = p.split(":"); chipGroup(a[0], a[1]); });
+  /* cámaras */
+  var foundCams = [];
+  function renderExtList() {
+    var box = $("extList"); box.textContent = "";
+    var list = foundCams.slice();
+    if (curEv.camId && !list.some(function (d) { return d.deviceId === curEv.camId; })) list.push({ deviceId: curEv.camId, label: curEv.camLabel || "Cámara guardada" });
+    list.forEach(function (d, i) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.v = d.deviceId;
+      b.textContent = d.label || ("Cámara " + (i + 1)); b.setAttribute("aria-pressed", d.deviceId === curEv.camId ? "true" : "false");
+      b.onclick = function () { curEv.camId = d.deviceId; curEv.camLabel = b.textContent; changed(); renderExtList(); };
+      box.appendChild(b);
+    });
+  }
+  function listCams() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return Promise.reject(new Error("nocam"));
+    return navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(function (s) {
+      return navigator.mediaDevices.enumerateDevices().then(function (ds) { s.getTracks().forEach(function (t) { t.stop(); }); return ds.filter(function (d) { return d.kind === "videoinput"; }); });
+    });
+  }
+  $("cams").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    curEv.cam = b.dataset.v;
+    if (b.dataset.v === "environment") curEv.mirror = "no";
+    if (b.dataset.v === "user") curEv.mirror = "si";
+    changed(); syncEditor();
+    if (b.dataset.v === "ext" && !foundCams.length) $("findCams").click();
+  });
+  $("findCams").onclick = function () {
+    $("extNote").textContent = "Buscando cámaras…";
+    listCams().then(function (ds) {
+      foundCams = ds;
+      $("extNote").textContent = ds.length ? "Toca la cámara que quieres usar. Si no aparece, desconéctala, conéctala otra vez y vuelve a buscar." : "No se encontró ninguna cámara.";
+      if (ds.length && !curEv.camId) { var ext = ds.filter(function (d) { return !/front|back|frontal|trasera|facetime/i.test(d.label); })[0] || ds[ds.length - 1]; curEv.camId = ext.deviceId; curEv.camLabel = ext.label; changed(); }
+      renderExtList();
+    }).catch(function () { $("extNote").textContent = "No hay permiso para usar la cámara. Revísalo en los ajustes del navegador."; });
+  };
+  var testStream = null;
+  function stopTest() { if (testStream) { testStream.getTracks().forEach(function (t) { t.stop(); }); testStream = null; } $("camTest").hidden = true; $("testCam").textContent = "Probar cámara"; }
+  $("testCam").onclick = function () {
+    if (testStream) return stopTest();
+    navigator.mediaDevices.getUserMedia({ audio: false, video: camConstraints(curEv) }).then(function (s) {
+      testStream = s; var v = $("camTest"); v.srcObject = s; v.hidden = false; v.style.transform = curEv.mirror === "si" ? "scaleX(-1)" : ""; v.play().catch(function () {});
+      $("testCam").textContent = "Detener prueba";
+    }).catch(function () { toast("No se pudo abrir esa cámara. Revisa la conexión y vuelve a buscar."); });
+  };
+  function camConstraints(ev) {
+    if (ev.cam === "ext" && ev.camId) return { deviceId: { exact: ev.camId }, width: { ideal: 1920 }, height: { ideal: 1080 } };
+    return { facingMode: ev.cam === "environment" ? "environment" : "user", width: { ideal: 1920 }, height: { ideal: 1440 } };
+  }
+
   $("types").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     var t = b.dataset.v, p = PRESETS[t];
@@ -853,12 +917,14 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   $("delEvent").onclick = function () {
     var b = $("delEvent");
     if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Toca otra vez para eliminar «" + (curEv.name || "Sin nombre") + "»"; armTimer = setTimeout(disarmDelete, 4000); return; }
-    disarmDelete(); var id = curEv.id;
+    disarmDelete(); stopTest(); removeEvent(curEv.id);
+  };
+  function removeEvent(id) {
     events = events.filter(function (e) { return e.id !== id; }); lsDel("micabina-bg-" + id); saveEvents(); dbClear(id);
     toast("Evento eliminado."); renderHome();
-  };
-  $("backHome").onclick = function () { clearTimeout(saveTimer); saveEvents(); renderHome(); };
-  $("startFromEditor").onclick = function () { clearTimeout(saveTimer); saveEvents(); startEvent(curEv.id); };
+  }
+  $("backHome").onclick = function () { stopTest(); clearTimeout(saveTimer); saveEvents(); renderHome(); };
+  $("startFromEditor").onclick = function () { stopTest(); clearTimeout(saveTimer); saveEvents(); startEvent(curEv.id); };
   $("openGallery2").onclick = function () { saveEvents(); openGallery(curEv.id, "editor"); };
 
   /* ================= GALERÍA ================= */
@@ -1009,15 +1075,20 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   });
 
   /* cámara */
-  var stream = null, facing = "user", session = null, shots = [], video = $("video");
+  var stream = null, mirrorOn = true, session = null, shots = [], video = $("video");
   function L() { return LAYOUTS[curEv.format]; }
   function camMsg(t) { var m = $("camMsg"); m.textContent = t || ""; m.hidden = !t; }
   function stopStream() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } video.srcObject = null; }
   function startStream() {
     stopStream();
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.reject(new Error("nocam"));
-    return navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1440 } } }).then(function (s) {
-      stream = s; video.srcObject = s; video.classList.toggle("mirror", facing === "user");
+    var ev = curEv;
+    return navigator.mediaDevices.getUserMedia({ audio: false, video: camConstraints(ev) }).catch(function (err) {
+      if (ev.cam !== "ext") throw err;
+      toast("No encontré la cámara externa. Uso la frontal.");
+      return navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1440 } } });
+    }).then(function (s) {
+      stream = s; video.srcObject = s; video.classList.toggle("mirror", mirrorOn);
       return new Promise(function (res) { if (video.readyState >= 1 && video.videoWidth) res(); else video.onloadedmetadata = function () { res(); }; })
         .then(function () { return video.play().catch(function () {}); }).then(placeGuide);
     });
@@ -1034,7 +1105,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     var vw = video.videoWidth, vh = video.videoHeight, a = slotAspect(i), cw = vw, ch = vw / a; if (ch > vh) { ch = vh; cw = vh * a; }
     var sx = (vw - cw) / 2, sy = (vh - ch) / 2, k = Math.min(1, 1800 / Math.max(cw, ch));
     var c = document.createElement("canvas"); c.width = Math.round(cw * k); c.height = Math.round(ch * k);
-    var x = c.getContext("2d"); if (facing === "user") { x.translate(c.width, 0); x.scale(-1, 1); }
+    var x = c.getContext("2d"); if (mirrorOn) { x.translate(c.width, 0); x.scale(-1, 1); }
     x.drawImage(video, sx, sy, cw, ch, 0, 0, c.width, c.height);
     return { base: c, cache: {} };
   }
@@ -1049,7 +1120,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     var n = L().slots.length;
     if (!list) { shots = []; list = []; for (var i = 0; i < n; i++) list.push(i); }
     session = { list: list, current: list[0], aborted: false, running: false };
-    facing = curEv.cam === "environment" ? "environment" : "user";
+    mirrorOn = curEv.mirror === "si";
     $("cnt").hidden = true; $("camGo").hidden = false; $("thumbs").hidden = true;
     $("camStep").textContent = n === 1 ? "Una foto" : n + " fotos seguidas";
     camMsg("Abriendo la cámara…"); show("cam"); keepAwake();
@@ -1156,7 +1227,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   };
   $("rvEmail").onclick = function () {
     if (!hasMailService()) {
-      rvMsg("Elige Mail, escribe tu correo y toca Enviar.");
+      rvMsg("Elige Mail (u otra app), escribe tu correo y envía.");
       shareFiles([result.file]).then(function (ok) { if (ok) $("rvEmail").classList.add("done"); });
       return;
     }
