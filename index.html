@@ -123,6 +123,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 #startBtn:active { transform: translateY(4px); box-shadow: 0 4px 0 var(--accent-dark); }
 .steps { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-weight: 700; font-size: 16px; color: #F3E9FF; }
 .steps span b { display: inline-flex; width: 28px; height: 28px; border-radius: 50%; align-items: center; justify-content: center; margin-right: 6px; color: var(--ink); }
+#pickBtn { font: 800 18px var(--body); color: #fff; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.35); border-radius: 999px; padding: 12px 26px; min-height: 54px; cursor: pointer; }
 #exitBtn { position: absolute; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.08); color: rgba(255,255,255,.55); border: 0; border-radius: 999px; padding: 10px 14px; font: 600 13px var(--body); cursor: pointer; }
 @media (prefers-reduced-motion: no-preference) {
   #startBtn { animation: pulse 1.8s ease-in-out infinite; }
@@ -375,11 +376,6 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   </div>
   <h2>Ajustes</h2>
   <div class="card">
-    <h3>Código para salir del modo evento</h3>
-    <div class="field"><label class="lab" for="sPin">Código de 4 números</label><input id="sPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>
-    <p class="note">Los invitados no pueden salir del evento sin este código. Si lo olvidas, el código de emergencia es 2580.</p>
-  </div>
-  <div class="card">
     <h3>Descargar con QR (ImgBB, gratis)</h3>
     <div class="field"><label class="lab" for="sImgbb">Clave de API de ImgBB</label><input id="sImgbb" type="text" autocomplete="off" spellcheck="false"></div>
     <fieldset><legend>La foto se borra de internet después de</legend>
@@ -412,7 +408,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   <div class="runlogo"><img src="logo.png" alt=""><div><span>Mi</span> Cabina</div></div>
   <h1 id="runTitle">¡Hora de la foto!</h1>
   <canvas class="runprev" id="runPrev" width="1000" height="2960" role="img" aria-label="Así quedará tu foto"></canvas>
-  <button id="startBtn" type="button">Toca aquí para empezar</button>
+  <button id="startBtn" type="button">Toca aquí para tomar tus fotos</button>
+  <button id="pickBtn" type="button">o elige fotos de la galería</button>
   <div class="steps">
     <span><b style="background:#FF5A6E;color:#fff">1</b>Mírate en la pantalla</span>
     <span><b style="background:#FFC94A">2</b>Sonríe en el conteo</span>
@@ -465,16 +462,26 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 </section>
 
 <!-- ventanas -->
-<div class="modal" id="pinModal" hidden>
-  <div class="sheet" id="pinSheet">
-    <h3>Código para salir</h3>
-    <div class="pinDots" id="pinDots"><i></i><i></i><i></i><i></i></div>
-    <div class="pad" id="pad">
-      <button type="button">1</button><button type="button">2</button><button type="button">3</button>
-      <button type="button">4</button><button type="button">5</button><button type="button">6</button>
-      <button type="button">7</button><button type="button">8</button><button type="button">9</button>
-      <button type="button" data-k="x">✕</button><button type="button">0</button><button type="button" data-k="b">⌫</button>
+<div class="modal" id="exitModal" hidden>
+  <div class="sheet">
+    <h3>¿Salir del evento?</h3>
+    <p class="note" style="margin:0">Vuelves a la lista de eventos. Las fotos tomadas quedan guardadas.</p>
+    <div class="row" style="justify-content:center">
+      <button class="btn" type="button" id="exitNo">Seguir en el evento</button>
+      <button class="btn primary" type="button" id="exitYes">Salir</button>
     </div>
+  </div>
+</div>
+<div class="modal" id="moreModal" hidden>
+  <div class="sheet">
+    <h3 id="moreTitle">Faltan fotos</h3>
+    <p class="note" id="moreNote" style="margin:0"></p>
+    <div class="row" style="justify-content:center">
+      <button class="btn" type="button" id="moreCam">Tomar las que faltan</button>
+      <button class="btn" type="button" id="moreRepeat">Repetir las elegidas</button>
+      <button class="btn primary" type="button" id="morePick">Elegir más</button>
+    </div>
+    <button class="btn ghost" type="button" id="moreCancel">Cancelar</button>
   </div>
 </div>
 <div class="modal" id="mailModal" hidden>
@@ -501,13 +508,15 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     <img id="photoImg" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;margin:0 auto">
     <div class="row" style="justify-content:center">
       <button class="btn" type="button" id="photoClose">Cerrar</button>
-      <button class="btn primary" type="button" id="photoShare">Compartir</button>
+      <button class="btn" type="button" id="photoShare">Compartir</button>
+      <button class="btn primary" type="button" id="photoPrint">Imprimir</button>
     </div>
   </div>
 </div>
 <div id="printArea"><img id="printImg" alt=""></div>
 
 <input type="file" id="camInput" accept="image/*" capture="user" hidden>
+<input type="file" id="pickInput" accept="image/*" multiple hidden>
 <input type="file" id="bgInput" accept="image/*" hidden>
 
 <script>
@@ -921,7 +930,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   $("openGallery2").onclick = function () { saveEvents(); openGallery(curEv.id, "editor"); };
 
   /* ================= GALERÍA ================= */
-  var galFrom = "home", galEv = null, galItems = [], photoBlob = null;
+  var galFrom = "home", galEv = null, galItems = [], photoBlob = null, photoPrint = null;
   function openGallery(id, from) {
     galEv = getEvent(id); galFrom = from; $("galTitle").textContent = "Fotos de " + (galEv ? galEv.name : "");
     var grid = $("galGrid"); grid.textContent = "Cargando…"; show("gallery");
@@ -931,13 +940,20 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       list.slice().reverse().forEach(function (r) {
         var b = document.createElement("button"); b.type = "button"; var im = document.createElement("img");
         im.src = URL.createObjectURL(r.blob); im.alt = "Foto del evento"; b.appendChild(im);
-        b.onclick = function () { photoBlob = r.blob; $("photoImg").src = im.src; $("photoModal").hidden = false; };
+        b.onclick = function () {
+          photoBlob = r.blob; photoPrint = null; $("photoImg").src = im.src; $("photoModal").hidden = false;
+          sheetFromBlob(r.blob).then(function (sh) { if (photoBlob === r.blob) photoPrint = { file: new File([sh.blob], "imprimir-micabina.jpg", { type: "image/jpeg" }), url: URL.createObjectURL(sh.blob), land: sh.land }; });
+        };
         grid.appendChild(b);
       });
     });
   }
   $("galBack").onclick = function () { if (galFrom === "editor" && galEv) openEditor(galEv.id); else renderHome(); };
   $("photoClose").onclick = function () { $("photoModal").hidden = true; };
+  $("photoPrint").onclick = function () {
+    if (!photoPrint) { toast("Preparando la hoja… toca Imprimir otra vez."); return; }
+    printFile(photoPrint.file, photoPrint.url, photoPrint.land, function (ok, cancel) { if (!ok && !cancel) toast("No se pudo abrir la impresión."); });
+  };
   $("photoShare").onclick = function () { if (photoBlob) shareFiles([new File([photoBlob], "micabina.jpg", { type: "image/jpeg" })]); };
   $("galShare").onclick = function () {
     if (!galItems.length) return toast("No hay fotos para compartir.");
@@ -960,14 +976,12 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 
   /* ================= AJUSTES ================= */
   function openSettings() {
-    $("sPin").value = settings.pin; $("sImgbb").value = settings.imgbb; $("sEjService").value = settings.ejService; $("sEjTemplate").value = settings.ejTemplate; $("sEjKey").value = settings.ejKey;
+    $("sImgbb").value = settings.imgbb; $("sEjService").value = settings.ejService; $("sEjTemplate").value = settings.ejTemplate; $("sEjKey").value = settings.ejKey;
     press("sExpire", settings.expire); $("testNote").textContent = ""; show("settings");
   }
   $("openSettings").onclick = openSettings;
   $("setBack").onclick = function () {
-    var pin = $("sPin").value.replace(/\D/g, "");
-    if (pin.length !== 4) { toast("El código debe tener 4 números."); $("sPin").focus(); return; }
-    settings.pin = pin; settings.imgbb = $("sImgbb").value.trim(); settings.ejService = $("sEjService").value.trim(); settings.ejTemplate = $("sEjTemplate").value.trim(); settings.ejKey = $("sEjKey").value.trim();
+    settings.imgbb = $("sImgbb").value.trim(); settings.ejService = $("sEjService").value.trim(); settings.ejTemplate = $("sEjTemplate").value.trim(); settings.ejKey = $("sEjKey").value.trim();
     saveSettings(); renderHome();
   };
   $("sExpire").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; settings.expire = b.dataset.v; press("sExpire", settings.expire); saveSettings(); });
@@ -1046,26 +1060,52 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   }
   $("startBtn").onclick = function () { audioInit(); startSession(null); };
 
-  /* salir con código */
-  var pinBuf = "";
-  function pinDraw() { Array.prototype.forEach.call($("pinDots").children, function (d, i) { d.classList.toggle("on", i < pinBuf.length); }); }
-  $("exitBtn").onclick = function () { pinBuf = ""; pinDraw(); $("pinModal").hidden = false; };
-  $("pad").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.k === "x") { $("pinModal").hidden = true; return; }
-    if (b.dataset.k === "b") { pinBuf = pinBuf.slice(0, -1); pinDraw(); return; }
-    if (pinBuf.length < 4) pinBuf += b.textContent; pinDraw();
-    if (pinBuf.length === 4) {
-      if (pinBuf === settings.pin || pinBuf === "2580") {
-        $("pinModal").hidden = true; stopStream(); clearInterval(idleTimer);
-        if (wakeLock) { try { wakeLock.release(); } catch (er) {} wakeLock = null; }
-        try { if (document.fullscreenElement) document.exitFullscreen(); } catch (er) {}
-        renderHome();
-      } else {
-        var s = $("pinSheet"); s.classList.remove("shake"); void s.offsetWidth; s.classList.add("shake"); setTimeout(function () { pinBuf = ""; pinDraw(); }, 350);
-      }
-    }
+  /* salir del evento (sin código) */
+  function exitEvent() {
+    $("exitModal").hidden = true; stopStream(); clearInterval(idleTimer);
+    if (wakeLock) { try { wakeLock.release(); } catch (er) {} wakeLock = null; }
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (er) {}
+    renderHome();
+  }
+  $("exitBtn").onclick = function () { $("exitModal").hidden = false; };
+  $("exitNo").onclick = function () { $("exitModal").hidden = true; };
+  $("exitYes").onclick = exitEvent;
+
+  /* elegir fotos de la galería */
+  var picked = [];
+  function loadPicked(files) {
+    var list = Array.prototype.slice.call(files || []);
+    return Promise.all(list.map(function (f) {
+      return new Promise(function (res) {
+        var url = URL.createObjectURL(f), img = new Image();
+        img.onload = function () { var k = Math.min(1, 1800 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res({ base: c, cache: {} }); };
+        img.onerror = function () { URL.revokeObjectURL(url); res(null); };
+        img.src = url;
+      });
+    })).then(function (arr) { return arr.filter(Boolean); });
+  }
+  function pickNeeded() { return LAYOUTS[curEv.format].slots.length; }
+  function afterPick() {
+    var need = pickNeeded();
+    if (picked.length >= need) { shots = picked.slice(0, need); picked = []; $("moreModal").hidden = true; finishSession(); return; }
+    var falta = need - picked.length;
+    $("moreTitle").textContent = picked.length ? "Te falta" + (falta === 1 ? " 1 foto" : "n " + falta + " fotos") : "No se eligió ninguna foto";
+    $("moreNote").textContent = "Este diseño lleva " + need + (need === 1 ? " foto." : " fotos.") + " Puedes elegir más, tomar las que faltan con la cámara o repetir las que elegiste.";
+    $("moreRepeat").hidden = !picked.length; $("moreCam").hidden = !picked.length;
+    $("moreModal").hidden = false;
+  }
+  $("pickBtn").onclick = function () { picked = []; $("pickInput").value = ""; $("pickInput").click(); };
+  $("morePick").onclick = function () { $("pickInput").value = ""; $("pickInput").click(); };
+  $("pickInput").addEventListener("change", function (e) {
+    loadPicked(e.target.files).then(function (arr) { picked = picked.concat(arr); afterPick(); });
   });
+  $("moreRepeat").onclick = function () { var need = pickNeeded(), base = picked.slice(); while (picked.length < need) picked.push(base[picked.length % base.length]); afterPick(); };
+  $("moreCam").onclick = function () {
+    var need = pickNeeded(); shots = []; for (var i = 0; i < picked.length && i < need; i++) shots[i] = picked[i];
+    var list = []; for (var j = picked.length; j < need; j++) list.push(j);
+    picked = []; $("moreModal").hidden = true; audioInit(); startSession(list, true);
+  };
+  $("moreCancel").onclick = function () { picked = []; $("moreModal").hidden = true; };
 
   /* cámara */
   var stream = null, mirrorOn = true, session = null, shots = [], video = $("video");
@@ -1109,9 +1149,10 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       else box.appendChild(document.createElement("span"));
     });
   }
-  function startSession(list) {
+  function startSession(list, keep) {
     var n = L().slots.length;
     if (!list) { shots = []; list = []; for (var i = 0; i < n; i++) list.push(i); }
+    else if (!keep) shots = [];
     session = { list: list, current: list[0], aborted: false, running: false };
     mirrorOn = curEv.mirror === "si";
     $("cnt").hidden = true; $("camGo").hidden = false; $("thumbs").hidden = true;
@@ -1180,8 +1221,50 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   $("camCancel").onclick = function () { if (session) session.aborted = true; stopStream(); showAttract(); };
   document.addEventListener("keydown", function (e) {
     if (!$("cam").hidden && session && !session.running && (e.key === " " || e.key === "Enter")) { e.preventDefault(); runSession(); }
-    if (!$("run").hidden && (e.key === " " || e.key === "Enter") && $("pinModal").hidden) { e.preventDefault(); $("startBtn").click(); }
+    if (!$("run").hidden && (e.key === " " || e.key === "Enter") && $("exitModal").hidden && $("moreModal").hidden) { e.preventDefault(); $("startBtn").click(); }
   });
+
+  /* ================= impresión ================= */
+  /* marca el JPEG a 508 dpi (20 px/mm): así 2000 x 2960 px se leen como 100 x 148 mm */
+  function withDpi(blob) {
+    return blob.arrayBuffer().then(function (buf) {
+      var b = new Uint8Array(buf);
+      if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF && b[3] === 0xE0 && b[6] === 0x4A && b[7] === 0x46 && b[8] === 0x49 && b[9] === 0x46) {
+        b[13] = 1; b[14] = 508 >> 8; b[15] = 508 & 255; b[16] = 508 >> 8; b[17] = 508 & 255;
+      }
+      return new Blob([b], { type: "image/jpeg" });
+    }).catch(function () { return blob; });
+  }
+  function canvasBlob(c) { return new Promise(function (res) { c.toBlob(function (b) { res(b); }, "image/jpeg", 0.93); }).then(function (b) { return b ? withDpi(b) : null; }); }
+  function isTouchApple() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+  /* en iPad/iPhone se imprime desde el menú de compartir (la ventana de impresión del navegador no abre en una app de inicio) */
+  function printFile(file, url, land, done) {
+    var mobile = isTouchApple() || /Android/i.test(navigator.userAgent);
+    if (mobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: "Imprimir" }).then(function () { done(true); }).catch(function (e) { done(false, e && e.name === "AbortError"); });
+      return true;
+    }
+    $("printImg").src = url;
+    $("pageSize").textContent = "@page { size: " + (land ? "148mm 100mm" : "100mm 148mm") + "; margin: 0; }";
+    setTimeout(function () { try { window.print(); done(true); } catch (e) { done(false); } }, 150);
+    return true;
+  }
+  /* hoja de impresión desde una foto guardada: si es una tira, se pone doble */
+  function sheetFromBlob(blob) {
+    return new Promise(function (res) {
+      var url = URL.createObjectURL(blob), img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        URL.revokeObjectURL(url);
+        if (w / h > 0.45) return withDpi(blob).then(function (b) { res({ blob: b, land: w > h }); });
+        var c = document.createElement("canvas"); c.width = w * 2; c.height = h;
+        var x = c.getContext("2d"); x.drawImage(img, 0, 0); x.drawImage(img, w, 0);
+        canvasBlob(c).then(function (b) { res({ blob: b, land: false }); });
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); res({ blob: blob, land: false }); };
+      img.src = url;
+    });
+  }
 
   /* ================= REVISIÓN ================= */
   var result = null; /* { blob, url, link } */
@@ -1190,28 +1273,26 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     getBg(curEv, function (bg) {
       var page = compose(curEv, shots, bg), sheet = sheetOf(curEv, page);
       /* la foto que se ve, guarda y envía es una sola tira; la hoja de impresión puede llevar dos */
-      page.toBlob(function (blob) {
+      canvasBlob(page).then(function (blob) {
         if (!blob) { toast("No se pudo armar la foto."); showAttract(); return; }
         if (result && result.url) URL.revokeObjectURL(result.url);
         if (result && result.printUrl && result.printUrl !== result.url) URL.revokeObjectURL(result.printUrl);
-        result = { blob: blob, url: URL.createObjectURL(blob), link: null, file: new File([blob], fileName(), { type: "image/jpeg" }), printUrl: null, printFile: null };
+        result = { blob: blob, url: URL.createObjectURL(blob), link: null, file: new File([blob], fileName(), { type: "image/jpeg" }), printUrl: null, printFile: null, land: curEv.format === "unah" };
         result.printUrl = result.url; result.printFile = result.file;
-        dbAdd({ ev: curEv.id, t: Date.now(), blob: blob });
+        dbAdd({ ev: curEv.id, t: Date.now(), blob: blob, fmt: curEv.format });
         $("reviewImg").src = result.url; $("printImg").src = result.url;
         if (sheet !== page) {
           var mine = result;
-          sheet.toBlob(function (pb) {
+          canvasBlob(sheet).then(function (pb) {
             if (!pb || mine !== result) return;
             mine.printUrl = URL.createObjectURL(pb); mine.printFile = new File([pb], "imprimir-" + fileName(), { type: "image/jpeg" });
             $("printImg").src = mine.printUrl;
-          }, "image/jpeg", 0.93);
+          });
         }
-        var land = curEv.format === "unah";
-        $("pageSize").textContent = "@page { size: " + (land ? "148mm 100mm" : "100mm 148mm") + "; margin: 0; }";
         $("rvSave").hidden = !curEv.share.save; $("rvPrint").hidden = !curEv.share.print; $("rvEmail").hidden = !curEv.share.email; $("rvQr").hidden = !curEv.share.qr;
         ["rvSave", "rvPrint", "rvEmail", "rvQr"].forEach(function (id) { $(id).classList.remove("done"); });
         $("reviewMsg").textContent = ""; show("review"); startIdle();
-      }, "image/jpeg", 0.93);
+      });
     });
   }
   function fileName() { var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; }; return "micabina-" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + ".jpg"; }
@@ -1226,8 +1307,11 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     shareFiles([result.file]).then(function (ok) { if (ok) { $("rvSave").classList.add("done"); rvMsg("Elige Guardar imagen en el menú. ¡Listo!"); } });
   };
   $("rvPrint").onclick = function () {
-    if (typeof window.print === "function") { rvMsg("Elige la impresora Canon SELPHY y toca Imprimir."); try { window.print(); $("rvPrint").classList.add("done"); return; } catch (e) {} }
-    shareFiles([result.printFile || result.file]).then(function (ok) { if (ok) $("rvPrint").classList.add("done"); });
+    if (curEv.format === "tira" && result.printFile === result.file) { rvMsg("Preparando la hoja… toca Imprimir otra vez."); return; }
+    rvMsg(isTouchApple() ? "Toca Imprimir en el menú, elige la Canon SELPHY y en Papel elige Postal." : "Elige la Canon SELPHY y toca Imprimir.");
+    printFile(result.printFile, result.printUrl, result.land, function (ok, cancel) {
+      if (ok) $("rvPrint").classList.add("done"); else if (!cancel) rvMsg("No se pudo abrir la impresión. Usa Guardar y luego imprime desde Fotos.");
+    });
   };
   $("rvEmail").onclick = function () {
     if (!hasMailService()) {
