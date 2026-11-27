@@ -1,7 +1,7 @@
 /* Mi Cabina: guarda la app y las plantillas en el equipo para que funcione sin internet.
    Cambia VERSION cada vez que subas una versión nueva. */
-var VERSION = "micabina-v9";
-var TPL = "micabina-plantillas-3";   /* cámbialo cuando cambien las plantillas */
+var VERSION = "micabina-v11";
+var TPL = "micabina-plantillas-4";   /* cámbialo cuando cambien las plantillas */
 var CORE = ["./", "index.html", "qr.js", "logo.png", "manifest.webmanifest", "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(CORE); }).then(function () { return self.skipWaiting(); }));

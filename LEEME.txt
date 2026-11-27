@@ -1,44 +1,13 @@
-MI CABINA - cómo actualizar tu repositorio de GitHub
-======================================================
+MI CABINA - actualización (borde blanco de 4 mm + Horizontal doble)
+====================================================================
+Todas las plantillas cambiaron de medida, así que hay que subirlas otra vez.
+GitHub acepta 100 archivos por vez: súbelo en DOS tandas, desde la página
+principal del repositorio (Add file > Upload files):
 
-Súbelo en el MISMO repositorio que ya tienes (lacabinita). Los archivos nuevos
-reemplazan a los anteriores.
+TANDA 1: index.html, sw.js, qr.js, manifest.webmanifest, logo.png,
+         apple-touch-icon.png, icon-192.png, icon-512.png, LEEME.txt
+         y las carpetas tira, una y horiz.          -> Commit changes
+TANDA 2: las carpetas unah y media.                  -> Commit changes
 
-TANDA 1 (en la página principal del repositorio: Add file > Upload files)
-  Arrastra: index.html, sw.js, qr.js, manifest.webmanifest, logo.png,
-  apple-touch-icon.png, icon-192.png, icon-512.png, LEEME.txt
-  y las carpetas tira, una y horiz.  -> Commit changes
-
-TANDA 2 (otra vez en la página principal: Add file > Upload files)
-  Arrastra la carpeta unah.  -> Commit changes
-
-Espera 2 minutos. En el iPad borra el ícono viejo de La Cabinita y vuelve a
-agregar la página a la pantalla de inicio para que tome el nombre y logo nuevos.
-Si ves plantillas viejas, cierra la app y ábrela otra vez.
-
-(Opcional) Para que la dirección diga micabina: en el repositorio ve a
-Settings > General > Repository name, escribe micabina y guarda. La dirección
-queda https://jshuertasm13.github.io/micabina/ y tus eventos siguen en el iPad.
-
-----------------------------------------------------------------
-QR GRATIS (ImgBB)
-1. Crea una cuenta en https://imgbb.com
-2. Entra a https://api.imgbb.com y toca "Get API key".
-3. En Mi Cabina: Ajustes > Clave de API de ImgBB > pega la clave.
-4. Toca "Probar conexión".
-
-CORREO AUTOMÁTICO GRATIS (EmailJS, 200 correos al mes) - necesita ImgBB
-1. Crea una cuenta en https://www.emailjs.com
-2. Email Services > Add New Service > Gmail > conecta tu correo. Copia el Service ID.
-3. Email Templates > Create New Template:
-   - To Email:  {{to_email}}
-   - Subject:   Tu foto de {{evento}}
-   - Content:   ¡Gracias por acompañarnos! Descarga tu foto aquí: {{link}}
-   Guarda y copia el Template ID.
-4. Account > General: copia la Public Key.
-5. En Mi Cabina: Ajustes > pega Service ID, Template ID y Public key.
-
-Sin EmailJS, el botón de correo abre la app Mail del iPad con la foto adjunta.
-
-CÓDIGO PARA SALIR DEL EVENTO
-Viene en 1234. Cámbialo en Ajustes. Código de emergencia: 2580.
+Luego, en el iPad: cierra Mi Cabina del todo, ábrela dos veces y en
+Ajustes toca "Preparar para usar sin internet".

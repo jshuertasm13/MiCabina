@@ -98,8 +98,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 .tpl .th { width: 54px; height: 160px; border-radius: 4px; border: 1.5px solid var(--line); background: #fff center/cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--muted); }
 #tpls[data-fmt="una"] .th, #tpls[data-fmt="horiz"] .th { width: 78px; height: 115px; }
 #tpls[data-fmt="una"] .tpl, #tpls[data-fmt="horiz"] .tpl { width: 84px; }
-#tpls[data-fmt="unah"] .th { width: 118px; height: 80px; }
-#tpls[data-fmt="unah"] .tpl { width: 122px; }
+#tpls[data-fmt="unah"] .th, #tpls[data-fmt="media"] .th { width: 118px; height: 85px; }
+#tpls[data-fmt="unah"] .tpl, #tpls[data-fmt="media"] .tpl { width: 122px; }
 .tpl[aria-pressed="true"] .th { outline: 3px solid var(--accent); outline-offset: 2px; }
 .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
 .sw { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--line); cursor: pointer; padding: 0; }
@@ -254,6 +254,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
             <button class="chip" type="button" data-v="una">Una foto</button>
             <button class="chip" type="button" data-v="horiz">2 horizontales</button>
             <button class="chip" type="button" data-v="unah">1 horizontal</button>
+            <button class="chip" type="button" data-v="media">Horizontal doble</button>
           </div>
         </fieldset>
       </div>
@@ -397,22 +398,6 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     <p class="note" id="testNote"></p>
   </div>
   <div class="card">
-    <h3>Impresión</h3>
-    <fieldset><legend>Margen de seguridad</legend>
-      <div class="chips" id="sMargin">
-        <button class="chip" type="button" data-v="0">0 mm</button>
-        <button class="chip" type="button" data-v="2">2 mm</button>
-        <button class="chip" type="button" data-v="3">3 mm</button>
-        <button class="chip" type="button" data-v="4">4 mm</button>
-        <button class="chip" type="button" data-v="5">5 mm</button>
-        <button class="chip" type="button" data-v="6">6 mm</button>
-      </div>
-    </fieldset>
-    <p class="note">La impresión sin bordes agranda un poco la foto y recorta las orillas. Este margen achica el diseño solo al imprimir y rellena la orilla con el mismo fondo, para que nada importante se corte. Lo que se guarda o se envía no cambia.</p>
-    <button class="btn small" id="testPrint" type="button">Imprimir hoja de prueba</button>
-    <p class="note">La hoja de prueba tiene reglas en milímetros en los cuatro bordes. Imprímela con margen 0 mm: en cada borde, cuenta cuántas rayas (1 mm cada una) se cortaron: eso es lo que recorta tu impresora. Usa ese valor más 1 mm como margen.</p>
-  </div>
-  <div class="card">
     <h3>Usar sin internet</h3>
     <button class="btn small" id="offline" type="button">Preparar para usar sin internet</button>
     <p class="note" id="offlineNote">Descarga todas las plantillas y letras en este equipo. Hazlo en casa antes de cada evento. El QR y el correo sí necesitan internet.</p>
@@ -542,17 +527,22 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 
   /* ================= datos fijos ================= */
   /* 20 px/mm sobre el papel postal de la Selphy (100 x 148 mm = 2000 x 2960 px). La tira es media hoja. */
+  /* La hoja final mide 100 x 148 mm (2000 x 2960 px a 20 px/mm; la tira es media hoja) y lleva un borde blanco
+     de 4 mm (80 px) a cada lado. Estas medidas son las del diseño interior, dentro de ese borde. */
+  var BORDER = 80;
   var LAYOUTS = {
-    tira:  { w: 1000, h: 2960, top: 430, foot: 2550, k: 1,    name: "Tira de 3",      slots: [[160, 430, 680, 680], [160, 1150, 680, 680], [160, 1870, 680, 680]] },
-    una:   { w: 2000, h: 2960, top: 420, foot: 2380, k: 1.45, name: "Una foto",       slots: [[150, 420, 1700, 1960]] },
-    horiz: { w: 2000, h: 2960, top: 420, foot: 2560, k: 1.45, name: "2 horizontales", slots: [[170, 420, 1660, 1050], [170, 1510, 1660, 1050]] },
-    unah:  { w: 2960, h: 2000, top: 330, foot: 1658, k: 1.3,  name: "1 horizontal",   slots: [[300, 330, 2360, 1328]] }
+    tira:  { w: 840,  h: 2800, top: 420, foot: 2360, k: 0.9,  name: "Tira de 3",      slots: [[110, 420, 620, 620], [110, 1080, 620, 620], [110, 1740, 620, 620]] },
+    una:   { w: 1840, h: 2800, top: 400, foot: 2240, k: 1.35, name: "Una foto",       slots: [[130, 400, 1580, 1840]] },
+    horiz: { w: 1840, h: 2800, top: 400, foot: 2400, k: 1.35, name: "2 horizontales", slots: [[150, 400, 1540, 980], [150, 1420, 1540, 980]] },
+    unah:  { w: 2800, h: 1840, top: 300, foot: 1526, k: 1.2,  name: "1 horizontal",   slots: [[310, 300, 2180, 1226]] },
+    media: { w: 1840, h: 1320, top: 230, foot: 1085, k: 0.85, name: "Horizontal doble", slots: [[160, 230, 1520, 855]] }
   };
   var TPL_NOTES = {
-    tira: "Plantilla propia: 1000 × 2960 px. Fotos de 680 × 680 px a 160 px del borde izquierdo, con tope en 430, 1150 y 1870 px. Texto arriba hasta 430 px y abajo desde 2550 px.",
-    una: "Plantilla propia: 2000 × 2960 px. Foto de 1700 × 1960 px a 150 px de la izquierda y 420 px de arriba. Texto abajo desde 2380 px.",
-    horiz: "Plantilla propia: 2000 × 2960 px. Fotos de 1660 × 1050 px a 170 px de la izquierda, con tope en 420 y 1510 px. Texto abajo desde 2560 px.",
-    unah: "Plantilla propia acostada: 2960 × 2000 px. Foto de 2360 × 1328 px a 300 px de la izquierda y 330 px de arriba. Texto abajo desde 1658 px."
+    tira: "Plantilla propia: 840 × 2800 px (la app le agrega el borde blanco de 4 mm). Fotos de 620 × 620 px a 110 px del borde izquierdo, con tope en 420, 1080 y 1740 px. Texto arriba hasta 420 px y abajo desde 2360 px.",
+    una: "Plantilla propia: 1840 × 2800 px (la app le agrega el borde blanco de 4 mm). Foto de 1580 × 1840 px a 130 px de la izquierda y 400 px de arriba. Texto abajo desde 2240 px.",
+    horiz: "Plantilla propia: 1840 × 2800 px (la app le agrega el borde blanco de 4 mm). Fotos de 1540 × 980 px a 150 px de la izquierda, con tope en 400 y 1420 px. Texto abajo desde 2400 px.",
+    media: "Plantilla propia: 1840 × 1320 px (la app le agrega el borde blanco de 4 mm; se imprimen dos por hoja). Foto de 1520 × 855 px a 160 px de la izquierda y 230 px de arriba. Texto abajo desde 1085 px.",
+    unah: "Plantilla propia acostada: 2800 × 1840 px (la app le agrega el borde blanco de 4 mm). Foto de 2180 × 1226 px a 310 px de la izquierda y 300 px de arriba. Texto abajo desde 1526 px."
   };
   var TEMPLATES = {
     boda:    [["boda-1", "Floral acuarela"], ["boda-2", "Blanco y oro"], ["boda-3", "Verde salvia"], ["boda-4", "Jardín blanco"], ["boda-5", "Rosa empolvado"]],
@@ -618,7 +608,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   function saveEvents() { if (!lsSet(EV_KEY, JSON.stringify(events))) toast("No se pudo guardar. Revisa el espacio del equipo."); }
   function getEvent(id) { return events.filter(function (e) { return e.id === id; })[0] || null; }
 
-  var settings = { margin: "4", imgbb: "", expire: "2592000", ejService: "", ejTemplate: "", ejKey: "" };
+  var settings = { imgbb: "", expire: "2592000", ejService: "", ejTemplate: "", ejKey: "" };
   try { var st = JSON.parse(lsGet(SET_KEY) || "null"); if (st) Object.keys(settings).forEach(function (k) { if (typeof st[k] === "string") settings[k] = st[k]; }); } catch (e) {}
   function saveSettings() { lsSet(SET_KEY, JSON.stringify(settings)); }
   function hasQr() { return !!settings.imgbb; }
@@ -748,11 +738,19 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     drawLines(x, L, ev.botSmall, ev.botBig, L.foot, L.h, footDark ? "#FFFFFF" : "#2B2140", ev, true);
     return c;
   }
-  function renderPreview(ev, canvas, shots) { compose(ev, shots, null, canvas); getBg(ev, function (bg) { compose(ev, shots, bg, canvas); }); }
+  /* agrega el borde blanco de 4 mm alrededor del diseño */
+  function framed(inner, target) {
+    var c = target || document.createElement("canvas"); c.width = inner.width + 2 * BORDER; c.height = inner.height + 2 * BORDER;
+    var x = c.getContext("2d"); x.fillStyle = "#FFFFFF"; x.fillRect(0, 0, c.width, c.height); x.drawImage(inner, BORDER, BORDER);
+    return c;
+  }
+  function renderPreview(ev, canvas, shots) { framed(compose(ev, shots, null), canvas); getBg(ev, function (bg) { framed(compose(ev, shots, bg), canvas); }); }
   function sheetOf(ev, c) {
-    if (ev.format !== "tira") return c;   /* la tira siempre se imprime doble en la hoja postal */
-    var s = document.createElement("canvas"); s.width = c.width * 2; s.height = c.height;
-    var x = s.getContext("2d"); x.drawImage(c, 0, 0); x.drawImage(c, c.width, 0); return s;
+    /* la tira se imprime doble lado a lado y la horizontal doble, una encima de la otra */
+    var s = document.createElement("canvas"), x;
+    if (ev.format === "tira") { s.width = c.width * 2; s.height = c.height; x = s.getContext("2d"); x.drawImage(c, 0, 0); x.drawImage(c, c.width, 0); return s; }
+    if (ev.format === "media") { s.width = c.width; s.height = c.height * 2; x = s.getContext("2d"); x.drawImage(c, 0, 0); x.drawImage(c, 0, c.height); return s; }
+    return c;
   }
 
   /* ================= INICIO ================= */
@@ -785,9 +783,9 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       card.appendChild(info); box.appendChild(card);
       dbCount(ev.id).then(function (n) { if (n) { meta.textContent += " · " + n + (n === 1 ? " foto" : " fotos"); ph.textContent = "Fotos (" + n + ")"; } });
       getBg(ev, function (bg) {
-        var full = compose(ev, null, bg), k = 160 / full.width;
+        var full = framed(compose(ev, null, bg)), k = 160 / full.width;
         cv.width = Math.round(full.width * k); cv.height = Math.round(full.height * k);
-        cv.style.width = (ev.format === "unah" ? 110 : ev.format === "tira" ? 60 : 82) + "px";
+        cv.style.width = ((ev.format === "unah" || ev.format === "media") ? 110 : ev.format === "tira" ? 60 : 82) + "px";
         cv.getContext("2d").drawImage(full, 0, 0, cv.width, cv.height);
       });
     });
@@ -813,7 +811,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     press("types", e.type); press("formats", e.format); press("fonts", e.font); press("frames", e.frame); press("filters", e.filter);
     press("cams", e.cam); press("mirrors", e.mirror); $("extBox").hidden = e.cam !== "ext"; renderExtList(); press("timers", e.timer); press("gaps", e.gap); press("sounds", e.sound);
     $("frameSet").hidden = !!e.template;
-    $("editorGrid").classList.toggle("wide", e.format !== "tira"); $("editorGrid").classList.toggle("land", e.format === "unah");
+    $("editorGrid").classList.toggle("wide", e.format !== "tira"); $("editorGrid").classList.toggle("land", e.format === "unah" || e.format === "media");
     $("tplNote").textContent = TPL_NOTES[e.format];
     var notes = [];
     if (e.share.qr && !hasQr()) notes.push("Para el QR falta poner la clave de ImgBB en Ajustes.");
@@ -992,20 +990,13 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 
   /* ================= AJUSTES ================= */
   function openSettings() {
-    press("sMargin", settings.margin); $("sImgbb").value = settings.imgbb; $("sEjService").value = settings.ejService; $("sEjTemplate").value = settings.ejTemplate; $("sEjKey").value = settings.ejKey;
+    $("sImgbb").value = settings.imgbb; $("sEjService").value = settings.ejService; $("sEjTemplate").value = settings.ejTemplate; $("sEjKey").value = settings.ejKey;
     press("sExpire", settings.expire); $("testNote").textContent = ""; show("settings");
   }
   $("openSettings").onclick = openSettings;
   $("setBack").onclick = function () {
     settings.imgbb = $("sImgbb").value.trim(); settings.ejService = $("sEjService").value.trim(); settings.ejTemplate = $("sEjTemplate").value.trim(); settings.ejKey = $("sEjKey").value.trim();
     saveSettings(); renderHome();
-  };
-  $("sMargin").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; settings.margin = b.dataset.v; press("sMargin", settings.margin); saveSettings(); });
-  $("testPrint").onclick = function () {
-    var c = testSheet(); canvasBlob(c).then(function (b) {
-      var f = new File([b], "hoja-de-prueba.jpg", { type: "image/jpeg" });
-      printFile(f, URL.createObjectURL(b), false, function (ok, cancel) { if (!ok && !cancel) toast("No se pudo abrir la impresión."); });
-    });
   };
   $("sExpire").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; settings.expire = b.dataset.v; press("sExpire", settings.expire); saveSettings(); });
   $("testServices").onclick = function () {
@@ -1078,7 +1069,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     clearInterval(idleTimer); stopStream();
     $("runTitle").textContent = curEv.topBig || curEv.name || "¡Hora de la foto!";
     renderPreview(curEv, $("runPrev"));
-    $("runPrev").style.height = curEv.format === "unah" ? "min(34vh, 320px)" : "";
+    $("runPrev").style.height = (curEv.format === "unah" || curEv.format === "media") ? "min(34vh, 320px)" : "";
     show("run");
   }
   $("startBtn").onclick = function () { audioInit(); startSession(null); };
@@ -1272,50 +1263,6 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     setTimeout(function () { try { window.print(); done(true); } catch (e) { done(false); } }, 150);
     return true;
   }
-  /* achica la hoja según el margen de seguridad y extiende las orillas para que no quede filo blanco */
-  function safeSheet(src) {
-    var mm = parseFloat(settings.margin) || 0, W = src.width, H = src.height;
-    if (mm <= 0) return src;
-    var big = Math.max(W, H), m = mm * 20, sc = (big - 2 * m) / big;
-    var dw = Math.round(W * sc), dh = Math.round(H * sc), dx = Math.round((W - dw) / 2), dy = Math.round((H - dh) / 2);
-    var c = document.createElement("canvas"); c.width = W; c.height = H;
-    var x = c.getContext("2d"); x.imageSmoothingQuality = "high";
-    x.drawImage(src, dx, dy, dw, dh);
-    x.drawImage(c, dx, dy, dw, 2, dx, 0, dw, dy);
-    x.drawImage(c, dx, dy + dh - 2, dw, 2, dx, dy + dh, dw, H - dy - dh);
-    x.drawImage(c, dx, 0, 2, H, 0, 0, dx, H);
-    x.drawImage(c, dx + dw - 2, 0, 2, H, dx + dw, 0, W - dx - dw, H);
-    return c;
-  }
-  /* hoja de 100 x 148 mm con reglas en los bordes para medir cuánto recorta la impresora */
-  function testSheet() {
-    var W = 2000, H = 2960, c = document.createElement("canvas"); c.width = W; c.height = H;
-    var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, W, H);
-    x.fillStyle = "#2B2140"; x.strokeStyle = "#2B2140"; x.textAlign = "center"; x.textBaseline = "middle";
-    function ruler(horizontal, atStart) {
-      for (var mm = 0; mm <= 12; mm++) {
-        var p = mm * 20, len = mm % 5 === 0 ? 140 : 80;
-        x.lineWidth = mm % 5 === 0 ? 5 : 3;
-        for (var k = -1; k <= 1; k++) {
-          var along = horizontal ? W / 2 + k * 600 : H / 2 + k * 900;
-          var pos = atStart ? p : (horizontal ? H : W) - p;
-          x.beginPath();
-          if (horizontal) { x.moveTo(along - len / 2, pos); x.lineTo(along + len / 2, pos); } else { x.moveTo(pos, along - len / 2); x.lineTo(pos, along + len / 2); }
-          x.stroke();
-          if (mm > 0 && mm <= 10 && mm % 2 === 0) {
-            x.font = "700 26px Figtree, sans-serif";
-            if (horizontal) x.fillText(String(mm), along + len / 2 + 30, pos); else x.fillText(String(mm), pos, along + len / 2 + 30);
-          }
-        }
-      }
-    }
-    ruler(true, true); ruler(true, false); ruler(false, true); ruler(false, false);
-    x.font = "700 64px Poppins, Figtree, sans-serif"; x.fillText("Hoja de prueba · Mi Cabina", W / 2, H / 2 - 120);
-    x.font = "600 40px Figtree, sans-serif";
-    ["Imprímela con margen de seguridad en 0 mm.", "En cada borde, la primera raya que se ve completa", "indica cuánto recorta la impresora (rayas cada 1 mm).", "Hoja: 100 × 148 mm"].forEach(function (t, i) { x.fillText(t, W / 2, H / 2 + i * 64); });
-    x.lineWidth = 2; x.strokeRect(400, 400, W - 800, H - 800);
-    return c;
-  }
 
   /* hoja de impresión desde una foto guardada: si es una tira, se pone doble */
   function sheetFromBlob(blob) {
@@ -1324,10 +1271,11 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       img.onload = function () {
         var w = img.naturalWidth, h = img.naturalHeight;
         URL.revokeObjectURL(url);
-        var c = document.createElement("canvas"), x;
-        if (w / h > 0.45) { c.width = w; c.height = h; x = c.getContext("2d"); x.drawImage(img, 0, 0); }
-        else { c.width = w * 2; c.height = h; x = c.getContext("2d"); x.drawImage(img, 0, 0); x.drawImage(img, w, 0); }
-        canvasBlob(safeSheet(c)).then(function (b) { res({ blob: b, land: w > h }); });        if (w / h > 0.45) return withDpi(blob).then(function (b) { res({ blob: b, land: w > h }); });
+        var c = document.createElement("canvas"), x, r = w / h, land = false;
+        if (r < 0.45) { c.width = w * 2; c.height = h; x = c.getContext("2d"); x.drawImage(img, 0, 0); x.drawImage(img, w, 0); }          /* tira */
+        else if (r > 1.25 && r < 1.45) { c.width = w; c.height = h * 2; x = c.getContext("2d"); x.drawImage(img, 0, 0); x.drawImage(img, 0, h); } /* horizontal doble */
+        else { c.width = w; c.height = h; x = c.getContext("2d"); x.drawImage(img, 0, 0); land = w > h; }
+        canvasBlob(c).then(function (b) { res({ blob: b, land: land }); });        if (w / h > 0.45) return withDpi(blob).then(function (b) { res({ blob: b, land: w > h }); });
         var c = document.createElement("canvas"); c.width = w * 2; c.height = h;
         var x = c.getContext("2d"); x.drawImage(img, 0, 0); x.drawImage(img, w, 0);
         canvasBlob(c).then(function (b) { res({ blob: b, land: false }); });
@@ -1342,7 +1290,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   function finishSession() {
     stopStream(); $("camStep").textContent = "Revelando…";
     getBg(curEv, function (bg) {
-      var page = compose(curEv, shots, bg), sheet = sheetOf(curEv, page);
+      var page = framed(compose(curEv, shots, bg)), sheet = sheetOf(curEv, page);
       /* la foto que se ve, guarda y envía es una sola tira; la hoja de impresión puede llevar dos */
       canvasBlob(page).then(function (blob) {
         if (!blob) { toast("No se pudo armar la foto."); showAttract(); return; }
@@ -1352,9 +1300,9 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
         result.printUrl = result.url; result.printFile = result.file;
         dbAdd({ ev: curEv.id, t: Date.now(), blob: blob, fmt: curEv.format });
         $("reviewImg").src = result.url; $("printImg").src = result.url;
-        {
+        if (sheet !== page) {
           var mine = result;
-          canvasBlob(safeSheet(sheet)).then(function (pb) {
+          canvasBlob(sheet).then(function (pb) {
             if (!pb || mine !== result) return;
             mine.printUrl = URL.createObjectURL(pb); mine.printFile = new File([pb], "imprimir-" + fileName(), { type: "image/jpeg" });
             $("printImg").src = mine.printUrl;
@@ -1378,7 +1326,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     shareFiles([result.file]).then(function (ok) { if (ok) { $("rvSave").classList.add("done"); rvMsg("Elige Guardar imagen en el menú. ¡Listo!"); } });
   };
   $("rvPrint").onclick = function () {
-    if (result.printFile === result.file) { rvMsg("Preparando la hoja… toca Imprimir otra vez."); return; }
+    if ((curEv.format === "tira" || curEv.format === "media") && result.printFile === result.file) { rvMsg("Preparando la hoja… toca Imprimir otra vez."); return; }
     rvMsg(isTouchApple() ? "Toca Imprimir en el menú, elige la Canon SELPHY y en Papel elige Postal." : "Elige la Canon SELPHY y toca Imprimir.");
     printFile(result.printFile, result.printUrl, result.land, function (ok, cancel) {
       if (ok) $("rvPrint").classList.add("done"); else if (!cancel) rvMsg("No se pudo abrir la impresión. Usa Guardar y luego imprime desde Fotos.");
