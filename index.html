@@ -397,6 +397,22 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     <p class="note" id="testNote"></p>
   </div>
   <div class="card">
+    <h3>Impresión</h3>
+    <fieldset><legend>Margen de seguridad</legend>
+      <div class="chips" id="sMargin">
+        <button class="chip" type="button" data-v="0">0 mm</button>
+        <button class="chip" type="button" data-v="2">2 mm</button>
+        <button class="chip" type="button" data-v="3">3 mm</button>
+        <button class="chip" type="button" data-v="4">4 mm</button>
+        <button class="chip" type="button" data-v="5">5 mm</button>
+        <button class="chip" type="button" data-v="6">6 mm</button>
+      </div>
+    </fieldset>
+    <p class="note">La impresión sin bordes agranda un poco la foto y recorta las orillas. Este margen achica el diseño solo al imprimir y rellena la orilla con el mismo fondo, para que nada importante se corte. Lo que se guarda o se envía no cambia.</p>
+    <button class="btn small" id="testPrint" type="button">Imprimir hoja de prueba</button>
+    <p class="note">La hoja de prueba tiene reglas en milímetros en los cuatro bordes. Imprímela con margen 0 mm: en cada borde, cuenta cuántas rayas (1 mm cada una) se cortaron: eso es lo que recorta tu impresora. Usa ese valor más 1 mm como margen.</p>
+  </div>
+  <div class="card">
     <h3>Usar sin internet</h3>
     <button class="btn small" id="offline" type="button">Preparar para usar sin internet</button>
     <p class="note" id="offlineNote">Descarga todas las plantillas y letras en este equipo. Hazlo en casa antes de cada evento. El QR y el correo sí necesitan internet.</p>
@@ -602,7 +618,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
   function saveEvents() { if (!lsSet(EV_KEY, JSON.stringify(events))) toast("No se pudo guardar. Revisa el espacio del equipo."); }
   function getEvent(id) { return events.filter(function (e) { return e.id === id; })[0] || null; }
 
-  var settings = { pin: "1234", imgbb: "", expire: "2592000", ejService: "", ejTemplate: "", ejKey: "" };
+  var settings = { margin: "4", imgbb: "", expire: "2592000", ejService: "", ejTemplate: "", ejKey: "" };
   try { var st = JSON.parse(lsGet(SET_KEY) || "null"); if (st) Object.keys(settings).forEach(function (k) { if (typeof st[k] === "string") settings[k] = st[k]; }); } catch (e) {}
   function saveSettings() { lsSet(SET_KEY, JSON.stringify(settings)); }
   function hasQr() { return !!settings.imgbb; }
@@ -976,13 +992,20 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 
   /* ================= AJUSTES ================= */
   function openSettings() {
-    $("sImgbb").value = settings.imgbb; $("sEjService").value = settings.ejService; $("sEjTemplate").value = settings.ejTemplate; $("sEjKey").value = settings.ejKey;
+    press("sMargin", settings.margin); $("sImgbb").value = settings.imgbb; $("sEjService").value = settings.ejService; $("sEjTemplate").value = settings.ejTemplate; $("sEjKey").value = settings.ejKey;
     press("sExpire", settings.expire); $("testNote").textContent = ""; show("settings");
   }
   $("openSettings").onclick = openSettings;
   $("setBack").onclick = function () {
     settings.imgbb = $("sImgbb").value.trim(); settings.ejService = $("sEjService").value.trim(); settings.ejTemplate = $("sEjTemplate").value.trim(); settings.ejKey = $("sEjKey").value.trim();
     saveSettings(); renderHome();
+  };
+  $("sMargin").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; settings.margin = b.dataset.v; press("sMargin", settings.margin); saveSettings(); });
+  $("testPrint").onclick = function () {
+    var c = testSheet(); canvasBlob(c).then(function (b) {
+      var f = new File([b], "hoja-de-prueba.jpg", { type: "image/jpeg" });
+      printFile(f, URL.createObjectURL(b), false, function (ok, cancel) { if (!ok && !cancel) toast("No se pudo abrir la impresión."); });
+    });
   };
   $("sExpire").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; settings.expire = b.dataset.v; press("sExpire", settings.expire); saveSettings(); });
   $("testServices").onclick = function () {
@@ -1249,6 +1272,51 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     setTimeout(function () { try { window.print(); done(true); } catch (e) { done(false); } }, 150);
     return true;
   }
+  /* achica la hoja según el margen de seguridad y extiende las orillas para que no quede filo blanco */
+  function safeSheet(src) {
+    var mm = parseFloat(settings.margin) || 0, W = src.width, H = src.height;
+    if (mm <= 0) return src;
+    var big = Math.max(W, H), m = mm * 20, sc = (big - 2 * m) / big;
+    var dw = Math.round(W * sc), dh = Math.round(H * sc), dx = Math.round((W - dw) / 2), dy = Math.round((H - dh) / 2);
+    var c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d"); x.imageSmoothingQuality = "high";
+    x.drawImage(src, dx, dy, dw, dh);
+    x.drawImage(c, dx, dy, dw, 2, dx, 0, dw, dy);
+    x.drawImage(c, dx, dy + dh - 2, dw, 2, dx, dy + dh, dw, H - dy - dh);
+    x.drawImage(c, dx, 0, 2, H, 0, 0, dx, H);
+    x.drawImage(c, dx + dw - 2, 0, 2, H, dx + dw, 0, W - dx - dw, H);
+    return c;
+  }
+  /* hoja de 100 x 148 mm con reglas en los bordes para medir cuánto recorta la impresora */
+  function testSheet() {
+    var W = 2000, H = 2960, c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, W, H);
+    x.fillStyle = "#2B2140"; x.strokeStyle = "#2B2140"; x.textAlign = "center"; x.textBaseline = "middle";
+    function ruler(horizontal, atStart) {
+      for (var mm = 0; mm <= 12; mm++) {
+        var p = mm * 20, len = mm % 5 === 0 ? 140 : 80;
+        x.lineWidth = mm % 5 === 0 ? 5 : 3;
+        for (var k = -1; k <= 1; k++) {
+          var along = horizontal ? W / 2 + k * 600 : H / 2 + k * 900;
+          var pos = atStart ? p : (horizontal ? H : W) - p;
+          x.beginPath();
+          if (horizontal) { x.moveTo(along - len / 2, pos); x.lineTo(along + len / 2, pos); } else { x.moveTo(pos, along - len / 2); x.lineTo(pos, along + len / 2); }
+          x.stroke();
+          if (mm > 0 && mm <= 10 && mm % 2 === 0) {
+            x.font = "700 26px Figtree, sans-serif";
+            if (horizontal) x.fillText(String(mm), along + len / 2 + 30, pos); else x.fillText(String(mm), pos, along + len / 2 + 30);
+          }
+        }
+      }
+    }
+    ruler(true, true); ruler(true, false); ruler(false, true); ruler(false, false);
+    x.font = "700 64px Poppins, Figtree, sans-serif"; x.fillText("Hoja de prueba · Mi Cabina", W / 2, H / 2 - 120);
+    x.font = "600 40px Figtree, sans-serif";
+    ["Imprímela con margen de seguridad en 0 mm.", "En cada borde, la primera raya que se ve completa", "indica cuánto recorta la impresora (rayas cada 1 mm).", "Hoja: 100 × 148 mm"].forEach(function (t, i) { x.fillText(t, W / 2, H / 2 + i * 64); });
+    x.lineWidth = 2; x.strokeRect(400, 400, W - 800, H - 800);
+    return c;
+  }
+
   /* hoja de impresión desde una foto guardada: si es una tira, se pone doble */
   function sheetFromBlob(blob) {
     return new Promise(function (res) {
@@ -1256,7 +1324,10 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
       img.onload = function () {
         var w = img.naturalWidth, h = img.naturalHeight;
         URL.revokeObjectURL(url);
-        if (w / h > 0.45) return withDpi(blob).then(function (b) { res({ blob: b, land: w > h }); });
+        var c = document.createElement("canvas"), x;
+        if (w / h > 0.45) { c.width = w; c.height = h; x = c.getContext("2d"); x.drawImage(img, 0, 0); }
+        else { c.width = w * 2; c.height = h; x = c.getContext("2d"); x.drawImage(img, 0, 0); x.drawImage(img, w, 0); }
+        canvasBlob(safeSheet(c)).then(function (b) { res({ blob: b, land: w > h }); });        if (w / h > 0.45) return withDpi(blob).then(function (b) { res({ blob: b, land: w > h }); });
         var c = document.createElement("canvas"); c.width = w * 2; c.height = h;
         var x = c.getContext("2d"); x.drawImage(img, 0, 0); x.drawImage(img, w, 0);
         canvasBlob(c).then(function (b) { res({ blob: b, land: false }); });
@@ -1281,9 +1352,9 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
         result.printUrl = result.url; result.printFile = result.file;
         dbAdd({ ev: curEv.id, t: Date.now(), blob: blob, fmt: curEv.format });
         $("reviewImg").src = result.url; $("printImg").src = result.url;
-        if (sheet !== page) {
+        {
           var mine = result;
-          canvasBlob(sheet).then(function (pb) {
+          canvasBlob(safeSheet(sheet)).then(function (pb) {
             if (!pb || mine !== result) return;
             mine.printUrl = URL.createObjectURL(pb); mine.printFile = new File([pb], "imprimir-" + fileName(), { type: "image/jpeg" });
             $("printImg").src = mine.printUrl;
@@ -1307,7 +1378,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
     shareFiles([result.file]).then(function (ok) { if (ok) { $("rvSave").classList.add("done"); rvMsg("Elige Guardar imagen en el menú. ¡Listo!"); } });
   };
   $("rvPrint").onclick = function () {
-    if (curEv.format === "tira" && result.printFile === result.file) { rvMsg("Preparando la hoja… toca Imprimir otra vez."); return; }
+    if (result.printFile === result.file) { rvMsg("Preparando la hoja… toca Imprimir otra vez."); return; }
     rvMsg(isTouchApple() ? "Toca Imprimir en el menú, elige la Canon SELPHY y en Papel elige Postal." : "Elige la Canon SELPHY y toca Imprimir.");
     printFile(result.printFile, result.printUrl, result.land, function (ok, cancel) {
       if (ok) $("rvPrint").classList.add("done"); else if (!cancel) rvMsg("No se pudo abrir la impresión. Usa Guardar y luego imprime desde Fotos.");
